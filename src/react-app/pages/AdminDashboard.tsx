@@ -12,9 +12,6 @@ import {
   Search,
   Calendar,
   DollarSign,
-  CheckCircle,
-  Clock,
-  XCircle,
 } from "lucide-react";
 
 type Place = {
@@ -35,6 +32,24 @@ type Booking = {
   status: "pending" | "confirmed" | "cancelled";
   createdAt: string;
 };
+
+type CardProps = {
+  title: string;
+  value: string | number;
+  icon: React.ReactNode;
+};
+
+function Card({ title, value, icon }: CardProps) {
+  return (
+    <div className="bg-white p-6 rounded-2xl shadow border flex items-center justify-between">
+      <div>
+        <p className="text-gray-500 text-sm">{title}</p>
+        <h2 className="text-2xl font-bold text-gray-800">{value}</h2>
+      </div>
+      <div className="text-3xl">{icon}</div>
+    </div>
+  );
+}
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -71,9 +86,9 @@ export default function AdminDashboard() {
     try {
       setLoading(true);
       const [placesRes, analyticsRes, bookingsRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/places", authHeader),
-        axios.get("http://localhost:5000/api/admin/analytics", authHeader),
-        axios.get("http://localhost:5000/api/admin/bookings", authHeader), // 🔥 NEW
+        axios.get("https://venture-hubb.onrender.com/api/places", authHeader),
+        axios.get("https://venture-hubb.onrender.com/api/admin/analytics", authHeader),
+        axios.get("https://venture-hubb.onrender.com/api/admin/bookings", authHeader), // 🔥 NEW
       ]);
 
       setPlaces(placesRes.data.data || placesRes.data);
@@ -88,7 +103,7 @@ export default function AdminDashboard() {
 
   const handleAddPlace = async () => {
     try {
-      await axios.post("http://localhost:5000/api/places", newPlace, authHeader);
+      await axios.post("https://venture-hubb.onrender.com/api/places", newPlace, authHeader);
       setShowAddModal(false);
       setNewPlace({ title: "", location: "", category: "fort", price: 0 });
       fetchAllData();
@@ -99,7 +114,7 @@ export default function AdminDashboard() {
 
   const handleDeletePlace = async (id: string) => {
     try {
-      await axios.delete(`http://localhost:5000/api/places/${id}`, authHeader);
+      await axios.delete(`https://venture-hubb.onrender.com/api/places/${id}`, authHeader);
       setPlaces((prev) => prev.filter((p) => p._id !== id));
     } catch (err) {
       console.error("❌ Delete Error:", err);
@@ -109,7 +124,7 @@ export default function AdminDashboard() {
   const updateBookingStatus = async (bookingId: string, status: string) => {
     try {
       await axios.patch(
-        `http://localhost:5000/api/admin/bookings/${bookingId}/status`,
+        `https://venture-hubb.onrender.com/api/admin/bookings/${bookingId}/status`,
         { status },
         authHeader
       );
@@ -122,7 +137,7 @@ export default function AdminDashboard() {
   const deleteBooking = async (bookingId: string) => {
     if (confirm("Delete this booking?")) {
       try {
-        await axios.delete(`http://localhost:5000/api/admin/bookings/${bookingId}`, authHeader);
+        await axios.delete(`https://venture-hubb.onrender.com/api/admin/bookings/${bookingId}`, authHeader);
         fetchAllData();
       } catch (err) {
         console.error("Delete error:", err);
