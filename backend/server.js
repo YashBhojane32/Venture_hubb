@@ -46,6 +46,10 @@ app.get("/api/admin/test", (req, res) => {
 
 app.get("/", (req, res) => res.send("🚀 Venture Hub API"));
 
+app.get("/test", (req, res) => {
+  res.send("Backend working 🚀");
+});
+
 const PORT = process.env.PORT || 5000;
 
 // DB + Server
