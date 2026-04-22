@@ -12,9 +12,6 @@ import {
   Search,
   Calendar,
   DollarSign,
-  CheckCircle,
-  Clock,
-  XCircle,
 } from "lucide-react";
 
 type Place = {
@@ -36,15 +33,14 @@ type Booking = {
   createdAt: string;
 };
 
-// Stats Card Component
 const Card = ({ title, value, icon }: { title: string; value: string | number; icon: React.ReactNode }) => (
-  <div className="bg-white p-6 rounded-2xl shadow-lg border hover:shadow-xl transition-all group">
+  <div className="bg-white p-6 rounded-2xl shadow-sm border hover:shadow-md transition-all group">
     <div className="flex items-center justify-between">
       <div>
-        <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
-        <p className="text-3xl font-bold text-gray-900 group-hover:text-blue-600 transition">{value}</p>
+        <p className="text-sm font-medium text-gray-500 mb-1">{title}</p>
+        <p className="text-2xl font-bold text-gray-900 group-hover:text-blue-600 transition">{value}</p>
       </div>
-      <div className="p-3 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl">
+      <div className="p-3 bg-blue-50 rounded-xl">
         {icon}
       </div>
     </div>
@@ -80,9 +76,13 @@ export default function AdminDashboard() {
     fetchAllData();
   }, []);
 
+  // Clear search when switching tabs to prevent empty states
+  useEffect(() => {
+    setSearch("");
+  }, [activeTab]);
+
   const fetchAllData = async () => {
     if (!token) {
-      console.error("❌ No token found");
       setLoading(false);
       return;
     }
@@ -96,7 +96,7 @@ export default function AdminDashboard() {
       ]);
 
       setPlaces(Array.isArray(placesRes.data.data) ? placesRes.data.data : placesRes.data || []);
-      setAnalytics(analyticsRes.data.data || analyticsRes.data || {});
+      setAnalytics(analyticsRes.data.data || analyticsRes.data || { users: 0, bookings: 0, revenue: 0 });
       setBookings(Array.isArray(bookingsRes.data.bookings) ? bookingsRes.data.bookings : bookingsRes.data || []);
     } catch (err) {
       console.error("❌ Fetch Error:", err);
@@ -106,10 +106,7 @@ export default function AdminDashboard() {
   };
 
   const handleAddPlace = async () => {
-    if (!token || !newPlace.title.trim() || !newPlace.location.trim()) {
-      return;
-    }
-
+    if (!token || !newPlace.title.trim() || !newPlace.location.trim()) return;
     try {
       await axios.post("http://localhost:5000/api/places", newPlace, authHeader);
       setShowAddModal(false);
@@ -121,28 +118,20 @@ export default function AdminDashboard() {
   };
 
   const handleDeletePlace = async (id: string) => {
-    if (!token || !confirm("Are you sure you want to delete this place?")) {
-      return;
-    }
-
+    if (!token || !confirm("Are you sure you want to delete this place?")) return;
     try {
       await axios.delete(`http://localhost:5000/api/places/${id}`, authHeader);
       setPlaces((prev) => prev.filter((p) => p._id !== id));
     } catch (err) {
       console.error("❌ Delete Error:", err);
-      fetchAllData(); // Refresh on error
+      fetchAllData();
     }
   };
 
-  const updateBookingStatus = async (bookingId: string, status: "pending" | "confirmed" | "cancelled") => {
+  const updateBookingStatus = async (bookingId: string, status: Booking["status"]) => {
     if (!token) return;
-
     try {
-      await axios.patch(
-        `http://localhost:5000/api/admin/bookings/${bookingId}/status`,
-        { status },
-        authHeader
-      );
+      await axios.patch(`http://localhost:5000/api/admin/bookings/${bookingId}/status`, { status }, authHeader);
       fetchAllData();
     } catch (err) {
       console.error("❌ Status update error:", err);
@@ -150,10 +139,7 @@ export default function AdminDashboard() {
   };
 
   const deleteBooking = async (bookingId: string) => {
-    if (!token || !confirm("Are you sure you want to delete this booking?")) {
-      return;
-    }
-
+    if (!token || !confirm("Are you sure you want to delete this booking?")) return;
     try {
       await axios.delete(`http://localhost:5000/api/admin/bookings/${bookingId}`, authHeader);
       fetchAllData();
@@ -168,7 +154,7 @@ export default function AdminDashboard() {
   };
 
   const filteredPlaces = places.filter((p) =>
-    p.title.toLowerCase().includes(search.toLowerCase())
+    p.title?.toLowerCase().includes(search.toLowerCase())
   );
 
   const filteredBookings = bookings.filter((b) => {
@@ -181,256 +167,141 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-100">
+      <div className="flex items-center justify-center h-screen bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading dashboard...</p>
+          <p className="text-gray-500 font-medium">Loading Dashboard...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-50">
       {/* SIDEBAR */}
       <aside className="w-64 bg-white border-r p-6 flex flex-col justify-between shadow-sm">
         <div>
-          <h2 className="text-2xl font-bold text-blue-600 mb-10">Venture Hub</h2>
-          <nav className="flex flex-col gap-4 text-gray-700">
-            <div
-              className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-all ${
-                activeTab === "dashboard"
-                  ? "bg-blue-100 text-blue-600 font-medium shadow-sm"
-                  : "hover:bg-gray-100"
-              }`}
-              onClick={() => setActiveTab("dashboard")}
-            >
-              <LayoutDashboard size={18} /> Dashboard
-            </div>
-            <div
-              className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-all ${
-                activeTab === "places"
-                  ? "bg-blue-100 text-blue-600 font-medium shadow-sm"
-                  : "hover:bg-gray-100"
-              }`}
-              onClick={() => setActiveTab("places")}
-            >
-              <MapPin size={18} /> Places
-            </div>
-            <div
-              className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-all ${
-                activeTab === "bookings"
-                  ? "bg-emerald-100 text-emerald-600 font-medium shadow-sm"
-                  : "hover:bg-gray-100"
-              }`}
-              onClick={() => setActiveTab("bookings")}
-            >
-              <Calendar size={18} /> Bookings
-            </div>
-            <div
-              className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-all ${
-                activeTab === "analytics"
-                  ? "bg-purple-100 text-purple-600 font-medium shadow-sm"
-                  : "hover:bg-gray-100"
-              }`}
-              onClick={() => setActiveTab("analytics")}
-            >
-              <BarChart3 size={18} /> Analytics
-            </div>
+          <h2 className="text-xl font-bold text-blue-600 mb-10 tracking-tight">Venture Hub</h2>
+          <nav className="flex flex-col gap-2">
+            {[
+              { id: "dashboard", icon: LayoutDashboard, label: "Dashboard" },
+              { id: "places", icon: MapPin, label: "Places" },
+              { id: "bookings", icon: Calendar, label: "Bookings" },
+              { id: "analytics", icon: BarChart3, label: "Analytics" },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-3 p-3 rounded-xl transition-all ${
+                  activeTab === tab.id ? "bg-blue-50 text-blue-600 font-semibold" : "text-gray-500 hover:bg-gray-50"
+                }`}
+              >
+                <tab.icon size={18} /> {tab.label}
+              </button>
+            ))}
           </nav>
         </div>
-        <button
-          onClick={logout}
-          className="flex items-center gap-2 text-red-500 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition-all"
-        >
+        <button onClick={logout} className="flex items-center gap-2 text-red-500 hover:bg-red-50 p-3 rounded-xl transition-all font-medium">
           <LogOut size={18} /> Logout
         </button>
       </aside>
 
       {/* MAIN CONTENT */}
       <main className="flex-1 p-8 overflow-y-auto">
-        {/* HEADER */}
         <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800 capitalize">
-              {activeTab === "bookings" ? "Bookings" : activeTab.replace("-", " ")}
-            </h1>
-            <p className="text-gray-500">Manage your platform</p>
-          </div>
+          <h1 className="text-2xl font-bold text-gray-800 capitalize">{activeTab}</h1>
           {activeTab === "places" && (
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl shadow-lg font-semibold transition-all"
-            >
-              <Plus size={20} /> Add Place
+            <button onClick={() => setShowAddModal(true)} className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2 rounded-xl shadow-sm hover:bg-blue-700 transition-all">
+              <Plus size={18} /> Add Place
             </button>
           )}
         </div>
 
-        {/* DASHBOARD TAB */}
         {activeTab === "dashboard" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card
-              title="Total Places"
-              value={places.length}
-              icon={<MapPin className="h-8 w-8 text-blue-500" />}
-            />
-            <Card
-              title="Bookings"
-              value={bookings.length}
-              icon={<Calendar className="h-8 w-8 text-emerald-500" />}
-            />
-            <Card
-              title="Revenue"
-              value={`₹${(analytics.revenue || 0).toLocaleString()}`}
-              icon={<DollarSign className="h-8 w-8 text-green-500" />}
-            />
-            <Card
-              title="Users"
-              value={analytics.users || 0}
-              icon={<Users className="h-8 w-8 text-purple-500" />}
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card title="Total Places" value={places.length} icon={<MapPin className="text-blue-500" />} />
+            <Card title="Bookings" value={bookings.length} icon={<Calendar className="text-emerald-500" />} />
+            <Card title="Revenue" value={`₹${(analytics.revenue || 0).toLocaleString()}`} icon={<DollarSign className="text-green-500" />} />
+            <Card title="Users" value={analytics.users || 0} icon={<Users className="text-purple-500" />} />
           </div>
         )}
 
-        {/* PLACES TAB */}
         {activeTab === "places" && (
-          <div>
-            <div className="flex items-center gap-3 mb-6 bg-white p-4 rounded-xl shadow-sm border">
-              <Search size={20} className="text-gray-400 flex-shrink-0" />
-              <input
-                placeholder="Search places..."
-                className="flex-1 outline-none text-lg"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 bg-white p-3 rounded-xl border">
+              <Search size={18} className="text-gray-400" />
+              <input placeholder="Search places..." className="flex-1 outline-none" value={search} onChange={(e) => setSearch(e.target.value)} />
             </div>
-
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden border">
-              <table className="w-full">
-                <thead className="bg-gray-50">
+            <div className="bg-white rounded-xl border overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-gray-50 border-b">
                   <tr>
-                    <th className="p-5 text-left text-sm font-semibold text-gray-700">Title</th>
-                    <th className="p-5 text-left text-sm font-semibold text-gray-700">Location</th>
-                    <th className="p-5 text-left text-sm font-semibold text-gray-700">Category</th>
-                    <th className="p-5 text-right text-sm font-semibold text-gray-700">Price</th>
-                    <th className="p-5 text-right text-sm font-semibold text-gray-700">Actions</th>
+                    <th className="p-4 text-sm font-semibold text-gray-600">Title</th>
+                    <th className="p-4 text-sm font-semibold text-gray-600">Location</th>
+                    <th className="p-4 text-sm font-semibold text-gray-600">Price</th>
+                    <th className="p-4 text-right text-sm font-semibold text-gray-600">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredPlaces.map((place) => (
-                    <tr key={place._id} className="border-t hover:bg-gray-50 transition">
-                      <td className="p-5 font-medium text-gray-900">{place.title}</td>
-                      <td className="p-5 text-gray-600">{place.location}</td>
-                      <td className="p-5">
-                        <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full capitalize">
-                          {place.category}
-                        </span>
-                      </td>
-                      <td className="p-5 text-right font-bold text-emerald-600">
-                        ₹{place.price.toLocaleString()}
-                      </td>
-                      <td className="p-5 text-right">
-                        <div className="flex gap-2 justify-end">
-                          <button className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition">
-                            <Pencil size={16} />
-                          </button>
-                          <button
-                            onClick={() => handleDeletePlace(place._id)}
-                            className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition"
-                            title="Delete place"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
+                    <tr key={place._id} className="border-b last:border-0 hover:bg-gray-50">
+                      <td className="p-4 font-medium">{place.title}</td>
+                      <td className="p-4 text-gray-500">{place.location}</td>
+                      <td className="p-4 font-bold text-emerald-600">₹{place.price.toLocaleString()}</td>
+                      <td className="p-4 text-right">
+                        <button onClick={() => handleDeletePlace(place._id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg">
+                          <Trash2 size={16} />
+                        </button>
                       </td>
                     </tr>
                   ))}
-                  {filteredPlaces.length === 0 && (
-                    <tr>
-                      <td colSpan={5} className="p-12 text-center text-gray-500">
-                        No places found
-                      </td>
-                    </tr>
-                  )}
                 </tbody>
               </table>
             </div>
           </div>
         )}
 
-        {/* BOOKINGS TAB */}
         {activeTab === "bookings" && (
-          <div>
-            <div className="flex flex-wrap gap-4 mb-6 bg-white p-6 rounded-xl shadow-sm border">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-              >
+          <div className="space-y-4">
+            <div className="flex gap-4 bg-white p-3 rounded-xl border">
+              <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="bg-transparent outline-none border-r pr-4">
                 <option value="">All Status</option>
-                <option value="pending">
-                  Pending ({bookings.filter((b) => b.status === "pending").length})
-                </option>
-                <option value="confirmed">
-                  Confirmed ({bookings.filter((b) => b.status === "confirmed").length})
-                </option>
+                <option value="pending">Pending</option>
+                <option value="confirmed">Confirmed</option>
                 <option value="cancelled">Cancelled</option>
               </select>
-              <input
-                type="text"
-                placeholder="Search bookings..."
-                className="flex-1 min-w-[200px] px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+              <input placeholder="Search customer or place..." className="flex-1 outline-none" value={search} onChange={(e) => setSearch(e.target.value)} />
             </div>
-
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden border">
-              <table className="w-full">
-                <thead className="bg-gray-50">
+            <div className="bg-white rounded-xl border overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-gray-50 border-b">
                   <tr>
-                    <th className="p-5 text-left text-sm font-semibold text-gray-700">Customer</th>
-                    <th className="p-5 text-left text-sm font-semibold text-gray-700">Place</th>
-                    <th className="p-5 text-left text-sm font-semibold text-gray-700">Date</th>
-                    <th className="p-5 text-left text-sm font-semibold text-gray-700">Guests</th>
-                    <th className="p-5 text-right text-sm font-semibold text-gray-700">Amount</th>
-                    <th className="p-5 text-left text-sm font-semibold text-gray-700">Status</th>
-                    <th className="p-5 text-right text-sm font-semibold text-gray-700">Actions</th>
+                    <th className="p-4 text-sm font-semibold text-gray-600">Customer</th>
+                    <th className="p-4 text-sm font-semibold text-gray-600">Place</th>
+                    <th className="p-4 text-sm font-semibold text-gray-600">Amount</th>
+                    <th className="p-4 text-sm font-semibold text-gray-600">Status</th>
+                    <th className="p-4 text-right text-sm font-semibold text-gray-600">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredBookings.map((booking) => (
-                    <tr key={booking._id} className="border-t hover:bg-gray-50 transition">
-                      <td className="p-5">
-                        <div className="font-medium text-gray-900">
-                          {booking.user?.name || "Guest"}
-                        </div>
-                        <div className="text-sm text-gray-500">{booking.user?.email || "N/A"}</div>
+                    <tr key={booking._id} className="border-b last:border-0 hover:bg-gray-50">
+                      <td className="p-4 text-sm">
+                        <div className="font-semibold">{booking.user?.name}</div>
+                        <div className="text-gray-400">{booking.user?.email}</div>
                       </td>
-                      <td className="p-5">
-                        <div className="font-medium">{booking.place?.title || "N/A"}</div>
-                        <div className="text-sm text-gray-500">{booking.place?.location || ""}</div>
+                      <td className="p-4 text-sm">
+                        <div className="font-medium">{booking.place?.title}</div>
+                        <div className="text-gray-400 text-xs">{new Date(booking.date).toLocaleDateString()}</div>
                       </td>
-                      <td className="p-5">
-                        {booking.date ? new Date(booking.date).toLocaleDateString() : "N/A"}
-                      </td>
-                      <td className="p-5 font-semibold">{booking.guests || 0}</td>
-                      <td className="p-5 text-right font-bold text-emerald-600">
-                        ₹{(booking.totalPrice || 0).toLocaleString()}
-                      </td>
-                      <td className="p-5">
+                      <td className="p-4 font-bold text-emerald-600">₹{booking.totalPrice?.toLocaleString()}</td>
+                      <td className="p-4">
                         <select
                           value={booking.status}
-                          onChange={(e) =>
-                            updateBookingStatus(booking._id, e.target.value as "pending" | "confirmed" | "cancelled")
-                          }
-                          className={`px-3 py-2 rounded-lg text-sm font-medium border transition-all ${
-                            booking.status === "confirmed"
-                              ? "bg-green-100 text-green-800 border-green-300"
-                              : booking.status === "pending"
-                              ? "bg-orange-100 text-orange-800 border-orange-300"
-                              : "bg-red-100 text-red-800 border-red-300"
+                          onChange={(e) => updateBookingStatus(booking._id, e.target.value as Booking["status"])}
+                          className={`text-xs font-bold px-2 py-1 rounded-md border ${
+                            booking.status === "confirmed" ? "bg-green-50 text-green-700 border-green-200" : 
+                            booking.status === "pending" ? "bg-orange-50 text-orange-700 border-orange-200" : "bg-red-50 text-red-700 border-red-200"
                           }`}
                         >
                           <option value="pending">Pending</option>
@@ -438,22 +309,45 @@ export default function AdminDashboard() {
                           <option value="cancelled">Cancelled</option>
                         </select>
                       </td>
-                      <td className="p-5 text-right">
-                        <button
-                          onClick={() => deleteBooking(booking._id)}
-                          className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition"
-                          title="Delete booking"
-                        >
+                      <td className="p-4 text-right">
+                        <button onClick={() => deleteBooking(booking._id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg">
                           <Trash2 size={16} />
                         </button>
                       </td>
                     </tr>
                   ))}
-                  {filteredBookings.length === 0 && (
-                    <tr>
-                      <td colSpan={7} className="p-12 text-center text-gray-500">
-                        <Calendar size={64} className="mx-auto mb-4 opacity-50" />
-                        <h3 className="text-xl font-semibold mb-2">No bookings found</h3>
-                        <p>Try adjusting your filters</p>
-                      </td>
-                    </tr
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "analytics" && (
+          <div className="bg-white p-10 rounded-xl border text-center">
+            <BarChart3 className="mx-auto text-gray-300 mb-4" size={48} />
+            <h3 className="text-lg font-semibold text-gray-800">Advanced Insights</h3>
+            <p className="text-gray-500">Visualization modules are being initialized.</p>
+          </div>
+        )}
+      </main>
+
+      {/* ADD MODAL */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-2xl w-full max-w-md shadow-xl">
+            <h2 className="text-xl font-bold mb-6">Create New Destination</h2>
+            <div className="space-y-4">
+              <input className="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500" placeholder="Place Title" value={newPlace.title} onChange={(e) => setNewPlace({...newPlace, title: e.target.value})} />
+              <input className="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500" placeholder="Location" value={newPlace.location} onChange={(e) => setNewPlace({...newPlace, location: e.target.value})} />
+              <input className="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500" type="number" placeholder="Price" value={newPlace.price} onChange={(e) => setNewPlace({...newPlace, price: Number(e.target.value)})} />
+              <div className="flex gap-3 pt-4">
+                <button onClick={() => setShowAddModal(false)} className="flex-1 py-3 text-gray-500 font-medium">Cancel</button>
+                <button onClick={handleAddPlace} className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all">Save Place</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
