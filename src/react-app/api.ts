@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:5000/api", // ✅ include /api
+  baseURL: "https://venture-hubb.onrender.com", // ✅ include /api
 });
 
 // ✅ ADD THIS (VERY IMPORTANT)
