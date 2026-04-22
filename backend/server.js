@@ -27,14 +27,6 @@ app.use(express.json({ limit: "10mb" }));
 // ✅ Static folder (ONLY ONCE)
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// 🔥 ROUTES
-app.use("/api/admin", adminRoutes);
-app.use("/api/places", placeRoutes);
-app.use("/api/auth", authRoutes);
-app.use("/api/applications", applicationRoutes);
-app.use("/api/admin/auth", adminAuth);
-app.use("/api/bookings", bookingRoutes);
-
 // 🧪 TEST
 app.get("/api/admin/test", (req, res) => {
   res.json({ 
@@ -43,6 +35,15 @@ app.get("/api/admin/test", (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+
+
+// 🔥 ROUTES
+app.use("/api/admin", adminRoutes);
+app.use("/api/places", placeRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/applications", applicationRoutes);
+app.use("/api/admin/auth", adminAuth);
+app.use("/api/bookings", bookingRoutes);
 
 app.get("/", (req, res) => res.send("🚀 Venture Hub API"));
 
