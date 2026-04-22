@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const Booking = require("../models/Booking");
-const Place = require("../models/Place");
+const Place = require("../models/place");
 
 const { protect, adminOnly } = require("../middleware/authMiddleware");
 

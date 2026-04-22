@@ -1,5 +1,5 @@
 const Booking = require("../models/Booking");
-const Place = require("../models/Place");
+const Place = require("../models/place");
 
 // 📌 CREATE BOOKING (SECURE)
 exports.createBooking = async (req, res) => {

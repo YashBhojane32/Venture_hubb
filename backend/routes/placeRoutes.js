@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const Place = require("../models/Place");
+const Place = require("../models/place");
 const upload = require("../middleware/upload");
 
 // 👉 POST - Add new place with MULTIPLE IMAGES

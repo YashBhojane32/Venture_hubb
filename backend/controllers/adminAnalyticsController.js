@@ -1,6 +1,6 @@
-const User = require("../models/User");
+const User = require("../models/user");
 const Booking = require("../models/Booking");
-const Place = require("../models/Place");
+const Place = require("../models/place");
 
 // 🔥 YOUR ANALYTICS FUNCTION (unchanged)
 const getAnalytics = async (req, res) => {
