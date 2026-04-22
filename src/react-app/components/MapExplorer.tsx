@@ -2,7 +2,20 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { destinations } from "@/data/destinations";
 
+// ✅ Type
+type Destination = {
+  id: string;
+  name: string;
+  location: string;
+  coordinates: {
+    lat: number;
+    lng: number;
+  };
+};
+
 export default function MapExplorer() {
+  const typedDestinations: Destination[] = destinations;
+
   return (
     <section className="py-16 px-6">
       <h2 className="text-3xl font-bold text-center mb-8">
@@ -16,11 +29,11 @@ export default function MapExplorer() {
         className="h-[500px] w-full rounded-xl shadow-lg"
       >
         <TileLayer
-          attribution="&copy; OpenStreetMap"
+          attribution="&copy; OpenStreetMap contributors"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {destinations.map((place) => (
+        {typedDestinations.map((place: Destination) => (
           <Marker
             key={place.id}
             position={[place.coordinates.lat, place.coordinates.lng]}

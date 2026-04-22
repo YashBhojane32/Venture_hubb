@@ -1,8 +1,8 @@
 import { useState } from "react";
 
 export default function ItineraryPlanner() {
-  const [days, setDays] = useState(1);
-  const [people, setPeople] = useState(1);
+  const [days, setDays] = useState<number>(1);
+  const [people, setPeople] = useState<number>(1);
 
   return (
     <section className="py-16 px-6 bg-gray-100">
@@ -15,7 +15,7 @@ export default function ItineraryPlanner() {
         <input
           type="number"
           value={days}
-          onChange={(e) => setDays(e.target.value)}
+          onChange={(e) => setDays(Number(e.target.value))}
           className="border p-2 w-full mb-4"
         />
 
@@ -23,7 +23,7 @@ export default function ItineraryPlanner() {
         <input
           type="number"
           value={people}
-          onChange={(e) => setPeople(e.target.value)}
+          onChange={(e) => setPeople(Number(e.target.value))}
           className="border p-2 w-full mb-4"
         />
 
