@@ -1,5 +1,5 @@
 const Application = require("../models/Application");
-const User = require("../models/User");
+const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const transporter = require("../config/email");
 
