@@ -45,8 +45,7 @@ export default function Contact() {
           <div>
             <label className="block mb-2 font-medium">Message</label>
             <textarea
-              rows={5 as number}
-              cols={30 as number}
+              rows={5}
               placeholder="Write your message..."
               className="w-full border rounded-lg px-4 py-3"
             />
