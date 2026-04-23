@@ -28,7 +28,7 @@ export default function Login() {
 
     try {
       const res = await axios.post<LoginResponse>(
-        "http://localhost:5000/api/auth/login", // ✅ FIXED ROUTE
+        "https://venture-hubb.onrender.com/api/auth/login", // ✅ FIXED ROUTE
         { email, password }
       );
 
