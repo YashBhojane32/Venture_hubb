@@ -1,10 +1,28 @@
-## Venture Hub – Explore the Unseen
+# 🗺️ Venture Hub — Explore the Unseen
 
-This app was created using https://getmocha.com.
-Need help or want to join the community? Join our [Discord](https://discord.gg/shDEGBSe2d).
+A travel discovery platform showcasing hidden 
+destinations across Maharashtra.
 
-To run the devserver:
-```
+## 🌐 Live Demo
+https://venture-hubb-qp3c.vercel.app/
+
+## ✨ Features
+- Discover hidden destinations across Maharashtra
+- District-wise location browsing
+- Travel blog with tips and guides
+- Google Maps integration
+- Mobile responsive design
+
+## 🛠️ Tech Stack
+- React.js + TypeScript
+- Tailwind CSS
+- Vite
+- Node.js (Backend)
+- Vercel (Deployment)
+
+## 📸 Screenshots
+[Add screenshots here]
+
+## 🚀 Run Locally
 npm install
 npm run dev
-```
