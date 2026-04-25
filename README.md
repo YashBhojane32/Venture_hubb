@@ -21,7 +21,8 @@ https://venture-hubb-qp3c.vercel.app/
 - Vercel (Deployment)
 
 ## 📸 Screenshots
-[Add screenshots here]
+<img width="1919" height="932" alt="Screenshot 2026-04-06 175523" src="https://github.com/user-attachments/assets/c68c892a-b946-4fc2-a610-2e9043f5169c" />
+
 
 ## 🚀 Run Locally
 npm install
